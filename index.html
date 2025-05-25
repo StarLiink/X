@@ -1,0 +1,1750 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Starlink Direct-to-Cell</title>
+  <script src="3.4.16"></script>
+  <link rel="stylesheet" href="css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #000;
+      color: #fff;
+      letter-spacing: -0.015em;
+    }
+    
+    /* Previne zoom em inputs no mobile */
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+    
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #000;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+      z-index: 1000;
+      border-bottom: 1px solid #333;
+    }
+    
+    .progress-container {
+      position: fixed;
+      top: 72px;
+      left: 35px;
+      width: 85%;
+      height: 4px;
+      background-color: transparent;
+      z-index: 999;
+    }
+    
+    .progress-track {
+      width: 100%;
+      height: 4px;
+      background-color: #222;
+      position: relative;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #0066ff, #00ccff);
+      width: 0%;
+      transition: width 0.3s ease;
+      position: relative;
+      box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+    }
+    
+    .progress-step {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: #222;
+      top: -4px;
+      transform: translateX(-50%);
+      border: 1px solid #333;
+    }
+    
+    .progress-step.active {
+      background-color: #00ccff;
+      border-color: #fff;
+      box-shadow: 0 0 8px rgba(0, 204, 255, 0.8);
+    }
+    
+    .container {
+      max-width: 640px;
+      margin: 120px auto 60px;
+      background-color: #000;
+      padding: 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #fff;
+      line-height: 1.3;
+      width: 100%;
+    }
+    
+    .option {
+      background-color: #111;
+      margin: 12px 0;
+      padding: 20px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-weight: 400;
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid #333;
+    }
+    
+    .option:hover {
+      background-color: #222;
+      border-color: #fff;
+    }
+    
+    .popup {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #000;
+      padding: 20px;
+      z-index: 1001;
+      display: none;
+      color: white;
+      max-width: 80%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid #fff;
+      width: 80%;
+      max-width: 500px;
+    }
+    
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+      display: block;
+      background-color: #fff;
+      color: #000;
+      padding: 16px 32px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 20px;
+    }
+    
+    .btn-primary:hover {
+      background-color: #eee;
+    }
+    
+    .feature-list {
+      padding-left: 0;
+      list-style-type: none;
+      width: 80%;
+      max-width: 500px;
+      margin-bottom: 25px;
+    }
+    
+    .feature-list li {
+      margin: 10px 0;
+      padding-left: 32px;
+      position: relative;
+      font-size: 13px;
+      line-height: 1;
+      text-align: center;
+    }
+    
+    .feature-list li:before {
+      content: "→";
+      color: #fff;
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+    
+    .final-price {
+      font-size: 2rem;
+      font-weight: 500;
+      color: #fff;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .original-price {
+      text-decoration: line-through;
+      color: #777;
+      font-size: 18px;
+    }
+    
+    .discount-badge {
+      display: inline-block;
+      background-color: #fff;
+      color: #000;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    
+    .urgency-banner {
+      background-color: #111;
+      padding: 12px;
+      text-align: center;
+      margin: 10px 0;
+      border: 1px solid #333;
+      font-size: 0.85rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    .urgency-banner strong {
+      color: #fff;
+      font-weight: 600;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #777;
+    }
+    
+    .close-btn:hover {
+      color: #fff;
+    }
+    
+    .welcome-container {
+      text-align: center;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .welcome-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      color: #fff;
+    }
+    
+    .welcome-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+    
+    .welcome-subtitle {
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      color: #ccc;
+      line-height: 1.5;
+      max-width: 500px;
+    }
+    
+    .welcome-features {
+      text-align: left;
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    .welcome-feature {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    
+    .welcome-feature i {
+      margin-right: 1rem;
+      color: #fff;
+      font-size: 1.2rem;
+    }
+    
+    .btn-start {
+      background-color: #fff;
+      color: #000;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .btn-start:hover {
+      background-color: #eee;
+    }
+    
+    .welcome-note {
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 1rem;
+      max-width: 500px;
+    }
+    
+    .popup-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: #fff;
+    }
+    
+    .popup-content {
+      text-align: center;
+      width: 100%;
+    }
+    
+    .popup-content p {
+      margin-bottom: 1rem;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    
+    .popup-btn {
+      background-color: #fff;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+      width: 100%;
+      text-transform: uppercase;
+    }
+    
+    .popup-btn:hover {
+      background-color: #eee;
+    }
+    
+    .option-selected {
+      background-color: #222;
+      border: 1px solid #fff;
+    }
+    
+    .starlink-logo {
+      display: block;
+      margin: 0 auto;
+    }
+    
+    .emoji-large {
+      font-size: 2rem;
+      display: block;
+      text-align: center;
+    }
+    
+    .cep-input {
+      background-color: #111;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 16px;
+      font-size: 16px !important;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      margin: 20px 0;
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
+    
+    .cep-input:focus {
+      outline: none;
+      border-color: #00ccff;
+      box-shadow: 0 0 0 2px rgba(0, 204, 255, 0.3);
+    }
+    
+    .cep-btn {
+      background-color: #00ccff;
+      color: #000;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+    }
+    
+    .cep-btn:hover {
+      background-color: #00b7e6;
+    }
+    
+    .cep-error {
+      color: #ff4444;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .popup.show {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* New funnel design */
+    .funnel-container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .funnel-step {
+      position: relative;
+      margin-bottom: 20px;
+      border-left: 2px solid #333;
+      padding-left: 20px;
+    }
+
+    .funnel-step.active {
+      border-left-color: #00ccff;
+    }
+
+    .funnel-step-number {
+      position: absolute;
+      left: -10px;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      background-color: #222;
+      border: 1px solid #333;
+      color: #777;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .funnel-step.active .funnel-step-number {
+      background-color: #00ccff;
+      color: #000;
+      border-color: #fff;
+    }
+
+    .funnel-step-content {
+      padding: 15px 15px 5px 15px;
+      background-color: #111;
+      border: 1px solid #333;
+    }
+
+    .funnel-step.active .funnel-step-content {
+      border-color: #00ccff;
+    }
+
+    /* Portability check styles */
+    .portability-status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      display: none;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .portability-loading {
+      background-color: #333;
+      color: #fff;
+margin-bottom: 10px;
+    }
+
+    .portability-success {
+      background-color: #00cc44;
+      color: #fff;
+margin-bottom: 10px;
+    }
+
+    .portability-approved {
+      background-color: #0066ff;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .phone-input {
+      background-color: #111;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 16px;
+      font-size: 16px !important;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      margin: 20px 0;
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
+
+    .phone-input:focus {
+      outline: none;
+      border-color: #00ccff;
+      box-shadow: 0 0 0 2px rgba(0, 204, 255, 0.3);
+    }
+
+    .phone-error {
+      color: #ff4444;
+      font-size: 14px;
+      display: none;
+    }
+
+    .portability-btn {
+      background-color: #00ccff;
+      color: #000;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+    }
+
+    .portability-btn:hover {
+      background-color: #00b7e6;
+    }
+
+    .new-number-btn {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 16px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+    }
+
+    .new-number-btn:hover {
+      background-color: #444;
+      border-color: #666;
+    }
+
+    .finalize-btn {
+      background-color: #00cc44;
+      color: #000;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+      display: none;
+margin-bottom: 10px;
+    }
+
+    .finalize-btn:hover {
+      background-color: #00bb44;
+    }
+
+    /* CEP loading styles */
+    .cep-loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .cep-loading-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #00ccff;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .cep-success {
+      display: none;
+      text-align: center;
+      background-color: #00cc44;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .cep-success-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    /* Ratings section */
+    .ratings-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 30px auto 0;
+      padding: 20px;
+      background-color: #111;
+      border: 1px solid #333;
+    }
+
+    .ratings-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .average-rrating {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .stars {
+      color: #00b2ff;
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+
+    .total-reviews {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .review-card {
+      background-color: #222;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      border: 1px solid #444;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .review-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      object-fit: cover;
+    }
+
+    .review-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .review-date {
+      color: #777;
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    .review-stars {
+      color: #ffcc00;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .review-text {
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    /* Guarantee Section */
+    .guarantee-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 30px auto 0;
+      padding: 20px;
+      background-color: #111;
+      border: 1px solid #333;
+      text-align: center;
+    }
+
+    .guarantee-icon {
+      font-size: 2.5rem;
+      color: #00cc44;
+      margin-bottom: 15px;
+    }
+
+    .guarantee-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .guarantee-text {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #ccc;
+    }
+
+    /* FAQ Section */
+    .faq-container {
+      width: �;
+      max-width: 500px;
+      margin: 30px auto 0;
+      padding: 20px;
+      background-color: #111;
+      border: 1px solid #333;
+    }
+
+    .faq-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .faq-item {
+      margin-bottom: 15px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 15px;
+    }
+
+    .faq-question {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+          font-size: 13px;
+    }
+
+    .faq-question:after {
+      content: "+";
+      font-size: 1.2rem;
+    }
+
+    .faq-question.active:after {
+      content: "-";
+    }
+
+    .faq-answer {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #ccc;
+      display: none;
+    }
+
+    .faq-answer.show {
+      display: block;
+    }
+
+    /* iPhone-style notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 12px 16px;
+      width: 280px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(120%);
+      transition: transform 0.3s ease-out;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification-icon {
+      width: 36px;
+      height: 36px;
+      background-color: #00ccff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-size: 18px;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .notification-text {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.3;
+    }
+
+    .notification-close {
+      color: #777;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* New styles for chip availability step */
+    .chip-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 30px 0;
+    }
+
+    .chip-loading-circle {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #333;
+      border-top-color: #00ccff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .chip-availability-result {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .chip-count {
+      font-size: 1.5rem;
+    font-weight: 600;
+    color: #00ccff;
+    margin: 10px 0;
+    }
+
+    .chip-warning {
+      background-color: #222;
+      border: 1px solid #ff4444;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .chip-warning-title {
+      color: #ff4444;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .resgatar-btn {
+      background-color: #00cc44;
+      color: #000;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 15px;
+    }
+
+    .resgatar-btn:hover {
+      background-color: #00bb44;
+    }
+
+    .popup-warning {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #000;
+      padding: 20px;
+      z-index: 1001;
+      display: none;
+      color: white;
+      max-width: 80%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid #ff4444;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    .popup-warning-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #ff4444;
+    }
+
+    .popup-warning-btn {
+      background-color: #00cc44;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 0.5rem;
+      width: 100%;
+      text-transform: uppercase;
+    }
+
+    .popup-warning-btn:hover {
+      background-color: #00bb44;
+    }
+
+    /* Phone compatibility check styles */
+    .phone-check-input {
+      background-color: #111;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 16px;
+      font-size: 16px !important;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      margin: 10px 0;
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+    }
+
+    .phone-check-input:focus {
+      outline: none;
+      border-color: #00ccff;
+      box-shadow: 0 0 0 2px rgba(0, 204, 255, 0.3);
+    }
+
+    .phone-check-btn {
+      background-color: #00ccff;
+      color: #000;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      margin-top: 10px;
+      width: 100%;
+      max-width: 300px;
+      text-transform: uppercase;
+    }
+
+    .phone-check-btn:hover {
+      background-color: #00b7e6;
+    }
+
+    .phone-check-loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .phone-check-loading-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #00ccff;
+      animation: spin 1.5s linear infinite;
+    }
+
+    .phone-check-success {
+      display: none;
+      text-align: center;
+      background-color: #00cc44;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .phone-check-success-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .phone-check-error {
+      color: #ff4444;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="brand-container">
+      <img src="images" alt="Starlink Logo" class="starlink-logo" style="height:18px;">
+    </div>
+    <div class="score-display">
+      <span>SCORE:</span>
+      <span id="score" class="font-bold">0</span>
+    </div>
+  </div>
+  
+  <div class="progress-container">
+    <div class="progress-track">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-step" id="step1"></div>
+      <div class="progress-step" id="step2"></div>
+      <div class="progress-step" id="step3"></div>
+      <div class="progress-step" id="step4"></div>
+      <div class="progress-step" id="step5"></div>
+      <div class="progress-step" id="step6"></div>
+      <div class="progress-step" id="step7"></div>
+      <div class="progress-step" id="step8"></div>
+      <div class="progress-step" id="step9"></div>
+    </div>
+  </div>
+  
+  <div class="container" id="quizContainer">
+    <div class="welcome-container">
+      <img src="img/oferta01.png" alt="Starlink Logo" class="mb-4" style="width:450px;">
+      <p class="welcome-subtitle">
+        Responda nossa pequena pesquisa e tenha a chance de participar da revolução com a internet via satélite!
+      </p>
+      
+      <div class="welcome-features">
+        <div class="welcome-feature">
+          <i class="fas fa-bolt"></i>
+          <span>Internet Ilimitada via Satélite</span>
+        </div>
+
+        <div class="welcome-feature">
+          <i class="fas fa-message"></i>
+          <span>Ligações e SMS Ilimitados</span>
+        </div>
+
+        <div class="welcome-feature">
+          <i class="fas fa-clock"></i>
+          <span>Apenas 2 minutos do seu tempo</span>
+        </div>
+        
+        <div class="welcome-feature">
+          <i class="fas fa-lock"></i>
+          <span>Sem Compromisso - nenhuma informação pessoal necessária</span>
+        </div>
+      </div>
+      
+      <button class="btn-start" onclick="iniciarQuestionario()">
+        <i class="fas fa-play" style="margin-right: 8px;"></i> INICIAR
+      </button>
+      
+      <p class="welcome-note">
+        * Oferta válida apenas para os primeiro 50 participantes. Seu desconto será garantido ao final do questionário.
+      </p>
+    </div>
+  </div>
+  
+  <div class="popup" id="popup">
+    <div class="close-btn" onclick="fecharPopup()">
+      <i class="fas fa-times"></i>
+    </div>
+    <div id="popupContent"></div>
+  </div>
+
+  <!-- Warning popup -->
+  <div class="popup-warning" id="popupWarning">
+    <div class="popup-warning-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="popup-content">
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">ATENÇÃO</h3>
+      <p style="">Pedidos pendentes NÃO RESERVAM o chip. Caso você realize o pedido e não efetue o pagamento, seu pedido será cancelado e disponibilizado para outro cliente.</p>
+     <p style="font-weight: 700; font-size: 15px;">Você tem certeza que deseja prosseguir com a assinatura?</p>
+      <button onclick="avancarParaResultado()" class="popup-warning-btn">
+        <i class="fas fa-check-circle" style="margin-right: 8px;"></i> SIM, QUERO PROSSEGUIR!
+      </button>
+    </div>
+  </div>
+
+  <!-- iPhone-style notification -->
+  <div class="notification" id="notification">
+    <div class="notification-icon">
+      <i class="fas fa-bolt"></i>
+    </div>
+    <div class="notification-content">
+      <div class="notification-title">Você está na fila!</div>
+      <div class="notification-text" id="notificationText">2 pessoas acabaram de comprar o Chip Starlink!</div>
+    </div>
+    <div class="notification-close" onclick="fecharNotificacao()">
+      <i class="fas fa-times"></i>
+    </div>
+  </div>
+  
+  <script>
+    const etapas = [
+      // Step 1
+      {
+        pergunta: "Você já recebeu cobranças indevidas da sua operadora?",
+        opcoes: ["Sim, várias vezes!", "Não, mas conheço quem já.", "Nunca."],
+        popup: {
+          icon: "fa-money-bill-wave",
+          title: "SEM TAXAS ESCONDIDAS",
+          content: "Com a Starlink Direct-to-Cell, você paga apenas uma taxa única. Sem boletos mensais, sem surpresas na fatura."
+        }
+      },
+      // Step 2
+      {
+        pergunta: "Qual foi sua maior frustração com planos de internet?",
+        opcoes: ["Acaba rápido demais", "Pago caro e recebo pouco", "Fica lento o tempo todo", "Nunca cumpre o prometido"],
+        popup: {
+          icon: "fa-tachometer-alt",
+          title: "VELOCIDADE GARANTIDA",
+          content: "Nosso serviço oferece conectividade verdadeiramente ilimitada. Chega de internet que te deixa na mão."
+        }
+      },
+      // Step 3
+      {
+        pergunta: "Seu sinal de internet costuma falhar em lugares abertos ou viagens?",
+        opcoes: ["Sempre", "Às vezes", "Não"],
+        popup: {
+          icon: "fa-satellite",
+          title: "COBERTURA GLOBAL",
+          content: "Conectividade via satélite da Starlink. Cobertura onde as operadoras tradicionais não chegam."
+        }
+      },
+      // Step 4
+      {
+        pergunta: "Você já foi obrigado a assinar fidelidade ou plano com multa?",
+        opcoes: ["Sim, e me arrependi", "Já aconteceu", "Nunca"],
+        popup: {
+          icon: "fa-handcuffs",
+          title: "SEM FIDELIDADE",
+          content: "Starlink Direct-to-Cell é 100% livre. Sem contrato e sem consulta de CPF!"
+        }
+      },
+      // Step 5
+      {
+        pergunta: "Você recebe diversas ligações indevidas de promoções e números desconhecidos?",
+        opcoes: ["Sim, todos os dias", "Sim, alguns dias da semana", "Não, mas conheço quem já recebeu", "Não recebo nenhuma"],
+        popup: {
+          icon: "fa-phone",
+          title: "ADEUS AOS INCÔMODOS",
+          content: "Nossa comunicação é exclusiva por SMS ou e-mail, nada de ligações infinitas."
+        }
+      },
+      // Step 6
+      {
+        pergunta: "Com qual dessas operadoras você já teve algum tipo de problema?",
+        opcoes: ["Claro", "Vivo", "TIM", "Todas","Outras"],
+        popup: {
+          icon: "fa-phone-slash",
+          title: "NOVA ERA DE CONECTIVIDADE",
+          content: "Enquanto elas aumentam preços, a Starlink entrega liberdade e tecnologia de ponta."
+        }
+      },
+      // Step 7 (Phone compatibility check)
+      {
+        pergunta: "Para verificar a compatibilidade do seu celular com a internet via satélite, digite o modelo:",
+        isPhoneCheckStep: true
+      },
+      // Step 8 (CEP verification)
+      {
+        pergunta: "Para verificar a disponibilidade em sua região, digite seu CEP:",
+        isCepStep: true
+      },
+      // Step 9 (Chip availability check)
+      {
+        pergunta: "Verificando Chips Disponíveis para sua Região com base no CEP",
+        isChipCheckStep: true
+      }
+    ];
+
+    let etapaAtual = 0;
+    let pontos = 0;
+    let cepDigitado = '';
+    const quizContainer = document.getElementById("quizContainer");
+    const progressBar = document.getElementById("progressBar");
+    const scoreDisplay = document.getElementById("score");
+    const popup = document.getElementById("popup");
+    const popupContent = document.getElementById("popupContent");
+    const popupWarning = document.getElementById("popupWarning");
+    const notification = document.getElementById("notification");
+    const notificationText = document.getElementById("notificationText");
+
+    // Infinite notification loop with changing people count
+    function startNotificationLoop() {
+      let peopleCount = 2;
+      
+      function showNextNotification() {
+        // Update notification text with current people count
+        notificationText.textContent = `${peopleCount} pessoas acabaram de comprar o Chip Starlink!`;
+        
+        // Show notification
+        notification.classList.add('show');
+        
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+          notification.classList.remove('show');
+          
+          // Prepare next notification after a delay
+          setTimeout(() => {
+            // Cycle people count between 2 and 5
+            peopleCount = peopleCount < 5 ? peopleCount + 1 : 2;
+            showNextNotification();
+          }, 7000); // Wait 7 seconds before showing next notification
+        }, 4000); // Show notification for 4 seconds
+      }
+      
+      // Start the loop
+      showNextNotification();
+    }
+
+    // Start the notification loop after 10 seconds
+    setTimeout(startNotificationLoop, 10000);
+
+    function fecharNotificacao() {
+      notification.classList.remove('show');
+    }
+
+    function iniciarQuestionario() {
+      etapaAtual = 0;
+      pontos = 0;
+      scoreDisplay.textContent = pontos;
+      updateProgressSteps();
+      renderEtapa();
+    }
+
+    function updateProgressSteps() {
+      for (let i = 1; i <= 9; i++) {
+        const step = document.getElementById(`step${i}`);
+        if (i <= etapaAtual) {
+          step.classList.add('active');
+        } else {
+          step.classList.remove('active');
+        }
+      }
+    }
+
+    function renderEtapa() {
+      if (etapaAtual < etapas.length) {
+        const etapa = etapas[etapaAtual];
+        
+        if (etapa.isPhoneCheckStep) {
+          // Render phone compatibility check step
+          quizContainer.innerHTML = `
+            <div class="funnel-container">
+              <div class="funnel-step ${etapaAtual === 0 ? 'active' : ''}">
+                <div class="funnel-step-number">${etapaAtual + 1}</div>
+                <div class="funnel-step-content">
+                  <h2 style="margin-bottom: 15px;">${etapa.pergunta}</h2>
+                  <p style="font-size: 0.9rem; margin-bottom: 10px;text-align: center;">Exemplos: iPhone 15, Samsung Galaxy S23, Xiaomi Redmi Note 12, etc.</p>
+                  
+                  <input type="text" class="phone-check-input" id="phoneModelInput" placeholder="Digite o modelo do seu celular">
+                  <p class="phone-check-error" id="phoneCheckError">Por favor, digite um modelo válido!</p>
+                  <button class="phone-check-btn" onclick="verificarCompatibilidade()">
+                    <span id="phoneCheckBtnText">VERIFICAR COMPATIBILIDADE</span>
+                  </button>
+                  
+                  <div class="phone-check-loading" id="phoneCheckLoading">
+                    <div class="phone-check-loading-icon">
+                      <i class="fas fa-satellite-dish fa-spin"></i>
+                    </div>
+                    <p>Verificando compatibilidade...</p>
+                  </div>
+                  
+                  <div class="phone-check-success" id="phoneCheckSuccess">
+                    <div class="phone-check-success-icon">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Modelo compatível!</h3>
+                    <p>Seu celular é compatível com a tecnologia Starlink Direct-to-Cell.</p>
+                    
+                    <button onclick="avancarParaCep()" class="phone-check-btn" style="background-color: #000;color: #fff; margin-top: 15px;">
+                      <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i> VERIFICAR REGIÃO
+                    </button>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (etapa.isCepStep) {
+          // Render CEP input step
+          quizContainer.innerHTML = `
+            <div class="funnel-container">
+              <div class="funnel-step ${etapaAtual === 0 ? 'active' : ''}">
+                <div class="funnel-step-number">${etapaAtual + 1}</div>
+                <div class="funnel-step-content">
+                  <h2>${etapa.pergunta}</h2>
+                  <input type="text" class="cep-input" id="cepInput" placeholder="Digite seu CEP (somente números)" maxlength="8" pattern="\d{8}">
+                  <p class="cep-error" id="cepError">Por favor, digite um CEP válido!</p>
+                  <button class="cep-btn" onclick="verificarCEP()">
+                    <span id="cepBtnText">VERIFICAR CEP</span>
+                  </button>
+                  
+                  <div class="cep-loading" id="cepLoading">
+                    <div class="cep-loading-icon">
+                      <i class="fas fa-satellite-dish fa-spin"></i>
+                    </div>
+                    <p>Verificando disponibilidade em sua região...</p>
+                  </div>
+                  
+                  <div class="cep-success" id="cepSuccess">
+                    <div class="cep-success-icon">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Região disponível!</h3>
+                    <p>Sua área está coberta pela rede Starlink Direct-to-Cell.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (etapa.isChipCheckStep) {
+          // Render chip availability check step
+          quizContainer.innerHTML = `
+            <div class="funnel-container">
+              <div class="funnel-step ${etapaAtual === 0 ? 'active' : ''}">
+                <div class="funnel-step-number">${etapaAtual + 1}</div>
+                <div class="funnel-step-content">
+                  <h2>${etapa.pergunta}</h2>
+                  <p style=" background: #404040; color: #fff; padding: 15px 25px; text-align: center; font-size: 15px; line-height: 17px; border-radius: 10px; margin-top: 14px; ">Devido à alta procura no lançamento do Chip Starlink, estamos liberando aos poucos novas assinaturas.</p>
+                  
+                  <div class="chip-loading" id="chipLoading">
+                    <div class="chip-loading-circle"></div>
+                    <p>Verificando chips disponíveis...</p>
+                  </div>
+                  
+                  <div class="chip-availability-result" id="chipAvailabilityResult">
+                    <div class="chip-count">3 Chips Disponíveis!</div>
+                    <p>Os chips foram disponibilizados devido ao não pagamento da assinatura.</p>
+                    
+                    <button class="resgatar-btn" onclick="mostrarPopupWarning()">
+                      <i class="fas fa-check-circle"></i> RESGATAR MEU CHIP
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Show loading for 4 seconds, then show result
+          setTimeout(() => {
+            document.getElementById('chipLoading').style.display = 'none';
+            document.getElementById('chipAvailabilityResult').style.display = 'block';
+          }, 4000);
+        } else {
+          // Render regular question step with funnel design
+          const html = `
+            <div class="funnel-container">
+              <div class="funnel-step ${etapaAtual === 0 ? 'active' : ''}">
+                <div class="funnel-step-number">${etapaAtual + 1}</div>
+                <div class="funnel-step-content">
+                  <h2>${etapa.pergunta}</h2>
+                  ${etapa.opcoes.map((op, i) => `
+                    <div class="option" onclick="responder(${i}, this)">
+                      ${op}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+          quizContainer.innerHTML = html;
+        }
+        
+        progressBar.style.width = `${(etapaAtual / etapas.length) * 100}%`;
+        updateProgressSteps();
+      } else {
+        mostrarPopupWarning();
+      }
+    }
+
+    function verificarCompatibilidade() {
+      const phoneModelInput = document.getElementById('phoneModelInput');
+      const phoneCheckError = document.getElementById('phoneCheckError');
+      const phoneCheckBtnText = document.getElementById('phoneCheckBtnText');
+      const phoneCheckLoading = document.getElementById('phoneCheckLoading');
+      const phoneCheckSuccess = document.getElementById('phoneCheckSuccess');
+      
+      // Validate phone model (at least 3 characters)
+      if (!phoneModelInput.value || phoneModelInput.value.length < 3) {
+        phoneCheckError.style.display = 'block';
+        return;
+      }
+      
+      phoneCheckError.style.display = 'none';
+      
+      // Show loading state
+      phoneCheckBtnText.innerHTML = '<span class="loading"></span> VERIFICANDO...';
+      phoneCheckLoading.style.display = 'block';
+      
+      // Simulate API call with timeout (4 seconds)
+      setTimeout(() => {
+        // Hide loading and show success
+        phoneCheckLoading.style.display = 'none';
+        phoneCheckSuccess.style.display = 'block';
+        phoneCheckBtnText.textContent = 'VERIFICAR COMPATIBILIDADE';
+      }, 4000);
+    }
+
+    function avancarParaCep() {
+      // Add points and advance to next step
+      pontos += 100;
+      etapaAtual++;
+      scoreDisplay.textContent = pontos;
+      renderEtapa();
+    }
+
+    function mostrarPopupWarning() {
+      popupWarning.style.display = 'block';
+    }
+
+    function avancarParaResultado() {
+      // Add points and advance to next step
+      pontos += 100;
+      etapaAtual++;
+      scoreDisplay.textContent = pontos;
+      popupWarning.style.display = 'none';
+      mostrarResultado();
+    }
+
+    function responder(i, element) {
+      // Adiciona efeito visual de seleção
+      const options = document.querySelectorAll('.option');
+      options.forEach(opt => opt.classList.remove('option-selected'));
+      element.classList.add('option-selected');
+      
+      // Adiciona pontos e avança
+      pontos += 100;
+      scoreDisplay.textContent = pontos;
+      
+      // Mostra popup imediatamente (sem delay)
+      mostrarPopup(etapas[etapaAtual].popup);
+      
+      // Avança para próxima etapa após seleção
+      etapaAtual++;
+    }
+
+    function verificarCEP() {
+      const cepInput = document.getElementById('cepInput');
+      const cepError = document.getElementById('cepError');
+      const cepBtnText = document.getElementById('cepBtnText');
+      const cepLoading = document.getElementById('cepLoading');
+      const cepSuccess = document.getElementById('cepSuccess');
+      
+      // Validate CEP (8 digits)
+      if (!cepInput.value || cepInput.value.length !== 8 || !/^\d+$/.test(cepInput.value)) {
+        cepError.style.display = 'block';
+        return;
+      }
+      
+      cepError.style.display = 'none';
+      cepDigitado = cepInput.value;
+      
+      // Show loading state
+      cepBtnText.innerHTML = '<span class="loading"></span> VERIFICANDO...';
+      cepLoading.style.display = 'block';
+      
+      // Simulate API call with timeout
+      setTimeout(() => {
+        // Hide loading and show success
+        cepLoading.style.display = 'none';
+        cepSuccess.style.display = 'block';
+        cepBtnText.textContent = 'VERIFICAR CEP';
+        
+        // Add points and advance to next step after 2 seconds
+        setTimeout(() => {
+          pontos += 100;
+          etapaAtual++;
+          scoreDisplay.textContent = pontos;
+          
+          // Avança para próxima etapa
+          renderEtapa();
+        }, 2000);
+      }, 2000);
+    }
+
+    function mostrarPopup(popupData) {
+      if (!popupData) {
+        // Se não houver popup definido, avança direto para próxima etapa
+        renderEtapa();
+        return;
+      }
+      
+      popupContent.innerHTML = `
+        <div class="popup-icon">
+          <i class="fas ${popupData.icon}"></i>
+        </div>
+        <div class="popup-content">
+          <h3 style="font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600;">${popupData.title}</h3>
+          <p>${popupData.content}</p>
+          <button onclick="fecharPopup()" class="popup-btn">
+            <i class="fas fa-arrow-right" style="margin-right: 8px;"></i> Continuar
+          </button>
+        </div>
+      `;
+      popup.style.display = 'block';
+    }
+
+    function fecharPopup() {
+      popup.style.display = 'none';
+      renderEtapa();
+    }
+
+    function mostrarResultado() {
+      const precoFinal = pontos >= 900 ? 69.90 : 139.80;
+      const desconto = pontos >= 900 ? "50%" : "10%";
+      quizContainer.innerHTML = `
+        <div style="text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <p style="font-size: 0.9rem; line-height: 1.5; max-width: 500px;margin-bottom:20px;">Você desbloqueou <strong>${pontos} pontos</strong> e ativou seu desconto especial:</p>
+          <img src="https://starlink-mini.com/mobile/images/oferta01.png" alt="Starlink Logo" class="mb-3" style="width:450px;">
+          
+          <div class="urgency-banner">
+            <strong>PAGAMENTO ÚNICO:</strong> Sem Mensalidades
+          </div>
+          
+          <ul class="feature-list">
+            <li>Compatível com Qualquer Celular</li>
+            <li>eSIM Chip Virtual Disponível</li>
+            <li>Ligações e SMS Ilimitados</li>
+            <li>Suporte Técnico direto da Starlink</li>
+            <li>Tecnologia da SpaceX</li>
+          </ul>
+
+<div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 20px;">Escolha seu Plano abaixo:</div>
+
+<a href="https://checkout.vendeagora.com/api/public/shopify?product=423351427515&store=4233"> <img src="https://starlink-mini.com/mobile/images/space.png" alt="Starlink Logo" class="mb-10" style="width:450px;"> </a>
+
+<a href="https://checkout.vendeagora.com/api/public/shopify?product=423361659682&store=4233"> <img src="https://starlink-mini.com/mobile/images/starx.png" alt="Starlink Logo" class="mb-10" style="width:450px;"> </a>
+
+<a href="https://checkout.vendeagora.com/api/public/shopify?product=423335897327&store=4233"> <img src="https://starlink-mini.com/mobile/images/lunar.png" alt="Starlink Logo" class="mb-5" style="width:450px;"> </a>
+
+
+
+          <img src="/mobile/images/selos.png" style="width: 400px; margin-top: 20px;">
+          <p style="font-size: 0.75rem; color: #777; margin-top: 1rem; letter-spacing: 0.05em; max-width: 500px;">Apenas 18 chips disponíveis no momento</p>
+          
+          <!-- Ratings Section -->
+          <div class="ratings-container">
+            <div class="ratings-header">
+              <div class="average-rating">4.9</div>
+              <div class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="total-reviews">Baseado em 2.487 avaliações</div>
+            </div>
+            
+            <!-- Review 1 -->
+            <div class="review-card">
+              <div class="review-header">
+                <img src="https://randomuser.me/api/portraits/men/72.jpg" alt="User" class="review-avatar">
+                <div>
+                  <div class="review-name">Juliano Almeida</div>
+                  <div class="review-date">09/05/2024</div>
+                </div>
+              </div>
+              <div class="review-stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="review-text">
+                Só a Starlink mesmo pra salvar a gente do perrengue.... Adeus lixos de operadoras brasileiras!!!
+              </div>
+            </div>
+            
+            <!-- Review 2 -->
+            <div class="review-card">
+              <div class="review-header">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="review-avatar">
+                <div>
+                  <div class="review-name">Carlos Eduardo</div>
+                  <div class="review-date">10/05/2024</div>
+                </div>
+              </div>
+              <div class="review-stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="review-text">
+                Vale cada centavo! Viajo muito a trabalho e antes ficava sem sinal em estradas e cidades pequenas. Agora tenho internet em qualquer lugar.
+              </div>
+            </div>
+            
+            <!-- Review 3 -->
+            <div class="review-card">
+              <div class="review-header">
+                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User" class="review-avatar">
+                <div>
+                  <div class="review-name">Fernanda Silva</div>
+                  <div class="review-date">03/05/2024</div>
+                </div>
+              </div>
+              <div class="review-stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="review-text">
+                Depois de anos sofrendo com as ligações INSUPORTÁVEIS, finalmente isso veio pra salvar. O atendimento também é excelente!
+              </div>
+            </div>
+          </div>
+          
+          <!-- Guarantee Section -->
+          <div class="guarantee-container">
+            <div class="guarantee-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="guarantee-title">GARANTIA DE 7 DIAS</div>
+            <div class="guarantee-text">
+              7 dias de garantia ou seu dinheiro de volta. Ativou e não gostou? Reembolsamos 100%.
+            </div>
+          </div>
+          
+          <!-- FAQ Section -->
+          <div class="faq-container">
+            <div class="faq-title">PERGUNTAS FREQUENTES</div>
+            
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFAQ(this)">Como funciona a instalação do chip Starlink?</div>
+              <div class="faq-answer">
+                O chip Starlink é plug-and-play. Basta inserir no seu celular como qualquer outro chip SIM. Não requer configurações complexas ou instalação de equipamentos.
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFAQ(this)">Quanto tempo leva para o chip chegar?</div>
+              <div class="faq-answer">
+                O envio é feito em até 48h úteis após a confirmação do pagamento. O prazo de entrega varia de 2 a 4 dias úteis dependendo da sua região.
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFAQ(this)">O chip funciona em qualquer celular?</div>
+              <div class="faq-answer">
+                Sim, o chip Starlink é compatível com qualquer smartphone que tenha suporte a redes 4G/5G. Não há restrição de marca ou modelo.
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFAQ(this)">Como faço para cancelar se não gostar?</div>
+              <div class="faq-answer">
+                Basta entrar em contato com nosso suporte dentro de 7 dias após a ativação para solicitar o reembolso total. Não há fidelidade ou multa.
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFAQ(this)">Posso manter meu número atual?</div>
+              <div class="faq-answer">
+                Sim! Durante o processo de compra você pode solicitar portabilidade do seu número atual para o chip Starlink. O processo é simples e rápido.
+              </div>
+            </div>
+          </div>
+        </div>
+        <img src="https://starlink-mini.com/mobile/images/selorodape.png" alt="Starlink Logo" class="mb-3" style="width:250px;margin-top:30px;">
+      `;
+      progressBar.style.width = `100%`;
+      updateProgressSteps();
+    }
+
+    function toggleFAQ(element) {
+      const answer = element.nextElementSibling;
+      element.classList.toggle('active');
+      answer.classList.toggle('show');
+    }
+  </script>
+  
+  <script src="js/latest.js" data-utmify-prevent-xcod-sck="" data-utmify-prevent-subids="" async="" defer=""></script>
+  
+
+</body></html>
