@@ -1308,7 +1308,38 @@ margin-bottom: 10px;
         
         if (etapa.isPhoneCheckStep) {
           // Render phone compatibility check step
-        
+          quizContainer.innerHTML = `
+            <div class="funnel-container">
+              <div class="funnel-step ${etapaAtual === 0 ? 'active' : ''}">
+                <div class="funnel-step-number">${etapaAtual + 1}</div>
+                <div class="funnel-step-content">
+                  <h2 style="margin-bottom: 15px;">${etapa.pergunta}</h2>
+                  <p style="font-size: 0.9rem; margin-bottom: 10px;text-align: center;">Exemplos: iPhone 15, Samsung Galaxy S23, Xiaomi Redmi Note 12, etc.</p>
+                  
+                  <input type="text" class="phone-check-input" id="phoneModelInput" placeholder="Digite o modelo do seu celular">
+                  <p class="phone-check-error" id="phoneCheckError">Por favor, digite um modelo válido!</p>
+                  <button class="phone-check-btn" onclick="verificarCompatibilidade()">
+                    <span id="phoneCheckBtnText">VERIFICAR COMPATIBILIDADE</span>
+                  </button>
+                  
+                  <div class="phone-check-loading" id="phoneCheckLoading">
+                    <div class="phone-check-loading-icon">
+                      <i class="fas fa-satellite-dish fa-spin"></i>
+                    </div>
+                    <p>Verificando compatibilidade...</p>
+                  </div>
+                  
+                  <div class="phone-check-success" id="phoneCheckSuccess">
+                    <div class="phone-check-success-icon">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Modelo compatível!</h3>
+                    <p>Seu celular é compatível com a tecnologia Starlink Direct-to-Cell.</p>
+                    
+                    <button onclick="avancarParaCep()" class="phone-check-btn" style="background-color: #000;color: #fff; margin-top: 15px;">
+                      <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i> VERIFICAR REGIÃO
+                    </button>
+                    
                   </div>
                 </div>
               </div>
@@ -1745,21 +1776,4 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 }(window, document, 'ttq');
 </script>
 <!-- TikTok Pixel Code End -->
-  <!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '4098643043795063');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=4098643043795063&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
 </body></html>
